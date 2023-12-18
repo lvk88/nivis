@@ -5,7 +5,7 @@ import { Pane } from 'tweakpane';
 //const height = 150;
 //const canvasScale = 3;
 const canvas = <HTMLCanvasElement>document.getElementById("postproc-area");
-const canvasScale = 3;
+const canvasScale = 5;
 const width = canvas.clientWidth / canvasScale;
 const height = canvas.clientHeight / canvasScale;
 const context = canvas.getContext("2d");
