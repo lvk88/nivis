@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 
 use itertools::Itertools;
 
-// This is just a 2D matrix
+// This is just a 2D array
 pub struct Array2D{
     size: [usize; 2],
     data: Vec<f64>
