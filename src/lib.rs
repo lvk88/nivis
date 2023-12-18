@@ -144,7 +144,7 @@ impl Simulation{
             ..self.temperature
         };
 
-        let term1 = diff_y(&term1, self.dx);
+        let term1 = diff_y(&term1, self.dy);
 
         let term2: Vec<f32> = epsilon_x_depsilondtheta.iter().zip(dphidy.data.iter()).map(|(lhs, rhs)|{
             lhs * rhs
@@ -155,7 +155,7 @@ impl Simulation{
             ..self.temperature
         };
 
-        let term2 = diff_y(&term2, self.dy);
+        let term2 = diff_x(&term2, self.dx);
 
         let m: Vec<f32> = self.temperature.data.iter().map(|val|{
             alpha / std::f32::consts::PI * (gamma * (teq - val)).atan()
