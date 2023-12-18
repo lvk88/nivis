@@ -2,11 +2,11 @@ use wasm_bindgen::prelude::*;
 
 use itertools::Itertools;
 
-// This is just a 2D array
-pub struct Array2D{
-    size: [usize; 2],
-    data: Vec<f32>
-}
+mod numeric;
+mod array;
+
+use array::{atan2, Array2D, new_array_with_function};
+use numeric::{laplace, diff_x, diff_y};
 
 #[wasm_bindgen]
 pub struct Simulation{
@@ -201,186 +201,9 @@ impl Simulation{
     }
 }
 
-pub fn new_array_with_function(nx: usize, ny: usize, dx: f32, dy: f32, func: impl Fn(f32, f32) -> f32) -> Array2D{
-    let data = (0..ny).cartesian_product(0..nx).map(|(j, i)|{
-        let x = i as f32 * dx;
-        let y = j as f32 * dy;
-        func(x,y)
-    }).collect();
-
-    Array2D{
-        size: [nx, ny],
-        data
-    }
-
-}
-
-pub fn diff_x(array: &Array2D, dx: f32) -> Array2D{
-    let mut data = vec![0.; array.size[0] * array.size[1]];
-    (1..array.size[1] - 1).cartesian_product(1..array.size[0] - 1).for_each(|(j,i)|{
-        let index = array.ravel(i,j);
-        data[index] = (array.value(i + 1, j) - array.value(i - 1, j)) / (2. * dx);
-    });
-
-    Array2D{
-        data,
-        ..*array
-    }
-}
-
-pub fn diff_y(array: &Array2D, dy: f32) -> Array2D{
-    let mut data = vec![0.; array.size[0] * array.size[1]];
-    (1..array.size[1] - 1).cartesian_product(1..array.size[0] - 1).for_each(|(j,i)|{
-        let index = array.ravel(i,j);
-        data[index] = (array.value(i, j + 1) - array.value(i, j - 1)) / (2. * dy);
-    });
-
-    Array2D{
-        data,
-        ..*array
-    }
-}
-
-pub fn laplace(array: &Array2D, dx: f32, dy: f32) -> Array2D{
-    let mut data = vec![0.; array.size[0] * array.size[1]];
-
-    (1..array.size[1] - 1).cartesian_product(1..array.size[0] - 1).for_each(|(j,i)|{
-        let index = array.ravel(i,j);
-
-        let ddx = (array.value(i + 1, j) - 2. * array.value(i, j) + array.value(i - 1, j)) / (dx * dx);
-        let ddy = (array.value(i, j + 1) - 2. * array.value(i, j) + array.value(i, j - 1)) / (dy * dy);
-
-        data[index] = ddx + ddy;
-    });
-
-    Array2D{
-        data,
-        ..*array
-    }
-}
-
-impl Array2D{
-    pub fn new(size: [usize; 2]) -> Array2D{
-        let data = vec![0.; size[0] * size[1]];
-        Array2D{
-            size,
-            data
-        }
-    }
-
-    fn ravel(&self, i: usize, j: usize) -> usize{
-        j * self.size[0] + i
-    }
-
-    fn value(&self, i: usize, j: usize) -> f32{
-        self.data[self.ravel(i,j)]
-    }
-}
-
-fn atan2(y: &Array2D, x: &Array2D) -> Array2D{
-    let data = y.data.iter().zip(x.data.iter()).map(|(y, x)|{
-        y.atan2(*x)
-    }).collect();
-
-    Array2D{
-        data,
-        ..*y
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use assert_float_eq::*;
-
-    #[test]
-    fn create_array2d_with_function() {
-        let grid_data = new_array_with_function(3, 4, 0.1, 0.2, |x,y|{ x + y });
-
-        assert_f32_near!(grid_data.value(0,0), 0.0);
-        assert_f32_near!(grid_data.value(1,0), 0.1);
-        assert_f32_near!(grid_data.value(0,1), 0.2);
-        assert_f32_near!(grid_data.value(1,1), 0.3);
-        assert_f32_near!(grid_data.value(2,3), 0.8);
-    }
-
-    #[test]
-    fn test_first_derivatives() {
-        let grid_data = new_array_with_function(3, 4, 0.1, 0.2, |x,y|{ x * x + y * y});
-
-        let dfdx = diff_x(&grid_data, 0.1);
-        assert_f32_near!(dfdx.value(0,0), 0.0);
-        assert_f32_near!(dfdx.value(1,0), 0.0);
-        assert_f32_near!(dfdx.value(1,1), 0.2);
-
-        let dfdy = diff_y(&grid_data, 0.2);
-        assert_f32_near!(dfdy.value(0,0), 0.0);
-        assert_f32_near!(dfdy.value(1,0), 0.0);
-        assert_f32_near!(dfdy.value(1,1), 0.4);
-    }
-
-    #[test]
-    fn test_laplace() {
-        let grid_data = new_array_with_function(3, 4, 0.1, 0.2, |x,y|{ x * x + y * y});
-
-        let laplace = laplace(&grid_data, 0.1, 0.2);
-
-        assert_f32_near!(laplace.value(0,0), 0.0);
-        assert_f32_near!(laplace.value(1,0), 0.0);
-        assert_f32_near!(laplace.value(1,1), 4.0);
-    }
-
-    #[test]
-    fn test_atan2_positive_values() {
-        let y = Array2D {
-            size: [1, 3],
-            data: vec![1.0, 2.0, 3.0],
-        };
-
-        let x = Array2D {
-            size: [1, 3],
-            data: vec![4.0, 5.0, 6.0],
-        };
-
-        let result = atan2(&y, &x);
-
-        let expected = Array2D {
-            size: [1, 3],
-            data: vec![0.24497867, 0.3805064, 0.46364760],
-        };
-
-        assert_eq!(result.size, expected.size);
-        assert_eq!(result.data.len(), expected.data.len());
-        for i in 0..result.data.len() {
-            assert_eq!(result.data[i], expected.data[i], "Mismatch at index {}", i);
-        }
-    }
-
-    #[test]
-    fn test_atan2_negative_values() {
-        let y = Array2D {
-            size: [1, 3],
-            data: vec![-1.0, -2.0, -3.0],
-        };
-
-        let x = Array2D {
-            size: [1, 3],
-            data: vec![-4.0, -5.0, -6.0],
-        };
-
-        let result = atan2(&y, &x);
-
-        let expected = Array2D {
-            size: [1, 3],
-            data: vec![-2.896613990462929, -2.761086276477428, -2.677945044588987],
-        };
-
-        assert_eq!(result.size, expected.size);
-        assert_eq!(result.data.len(), expected.data.len());
-        for i in 0..result.data.len() {
-            assert_eq!(result.data[i], expected.data[i], "Mismatch at index {}", i);
-        }
-    }
 
     #[test]
     fn test_get_temperature_and_phi_arrays(){
