@@ -99,4 +99,5 @@ const randomSeed = () => {
   }
 }
 
+randomSeed();
 animationFrameID = requestAnimationFrame(postprocess);
