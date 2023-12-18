@@ -47,6 +47,9 @@ pane.addBinding(simulationParams, 'postprocField', {label: "Show...", options: {
 pane.addButton({title: "Restart"}).on('click', () => {
   s.reset();
 });
+pane.addButton({title: "Random seed"}).on('click', () => {
+  randomSeed();
+});
 
 const playPauseButton = pane.addButton({title: "Pause"});
 playPauseButton.on('click', () => {
@@ -86,6 +89,14 @@ const postprocess = () => {
     context.drawImage(bitmap, 0,0, canvas.width, canvas.height);
   });
   animationFrameID = requestAnimationFrame(postprocess);
+}
+
+const randomSeed = () => {
+  for(let i = 0; i < 10; i++){
+    const x = Math.floor(Math.random() * canvas.width - 1);
+    const y = Math.floor(Math.random() * canvas.height - 1);
+    s.add_seed(x, y);
+  }
 }
 
 animationFrameID = requestAnimationFrame(postprocess);
