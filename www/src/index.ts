@@ -1,17 +1,17 @@
 import { Simulation } from 'mywasm';
 import { Pane } from 'tweakpane';
 
-//const width = 150;
-//const height = 150;
-//const canvasScale = 3;
 const canvas = <HTMLCanvasElement>document.getElementById("postproc-area");
-const canvasScale = 5;
-const width = canvas.clientWidth / canvasScale;
-const height = canvas.clientHeight / canvasScale;
+const canvasScale = 3;
+canvas.width = canvas.clientWidth / canvasScale;
+canvas.height = canvas.clientHeight / canvasScale;
+
+console.log(canvas.clientWidth+ " x " + canvas.clientHeight);
+
 const context = canvas.getContext("2d");
 
 
-const s = new Simulation(width, height);
+const s = new Simulation(canvas.width, canvas.height);
 
 enum PostprocField{
   Temperature,
@@ -43,9 +43,7 @@ pane.addButton({title: "Restart"}).on('click', () => {
 const postprocess = async () => {
   s.kappa = simulationParams.kappa;
   s.delta = simulationParams.delta;
-  console.time("Simulation");
   s.step();
-  console.timeEnd("Simulation");
   let rgbBuffer: Uint8Array = null;
   if(stringToPostprocField.get(simulationParams.postprocField) == PostprocField.Phi){
     rgbBuffer = s.get_phi_rgb();
@@ -55,11 +53,13 @@ const postprocess = async () => {
   const rgbDataArray = new Uint8ClampedArray(rgbBuffer);
   const imageData = new ImageData(rgbDataArray, s.width, s.height);
   const bitmap = await createImageBitmap(imageData);
-  const hRatio = canvas.width / bitmap.width;
-  const vRatio = canvas.height / bitmap.height;
-  const ratio  = Math.min( hRatio, vRatio );
-  context.drawImage(bitmap, 0,0, bitmap.width, bitmap.height, 0,0,bitmap.width*ratio, bitmap.height*ratio);
+  //const ratio  = Math.min( hRatio, vRatio );
+  context.drawImage(bitmap, 0,0, canvas.width, canvas.height);
   requestAnimationFrame(postprocess);
 }
 
 requestAnimationFrame(postprocess);
+
+window.onresize = ()=>{
+  console.log(window.innerWidth + " + " + window.innerHeight);
+};
