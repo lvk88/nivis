@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use std::ops::{Add, Sub};
+
 use itertools::Itertools;
 
 // This is just a 2D array
@@ -138,6 +140,17 @@ impl Array2D{
     }
 }
 
+fn atan2(y: &Array2D, x: &Array2D) -> Array2D{
+    let data = y.data.iter().zip(x.data.iter()).map(|(y, x)|{
+        y.atan2(*x)
+    }).collect();
+
+    Array2D{
+        data,
+        ..*y
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -198,5 +211,57 @@ mod tests {
         assert_f64_near!(laplace.value(0,0), 0.0);
         assert_f64_near!(laplace.value(1,0), 0.0);
         assert_f64_near!(laplace.value(1,1), 4.0);
+    }
+
+    #[test]
+    fn test_atan2_positive_values() {
+        let y = Array2D {
+            size: [1, 3],
+            data: vec![1.0, 2.0, 3.0],
+        };
+
+        let x = Array2D {
+            size: [1, 3],
+            data: vec![4.0, 5.0, 6.0],
+        };
+
+        let result = atan2(&y, &x);
+
+        let expected = Array2D {
+            size: [1, 3],
+            data: vec![0.24497866312686414, 0.3805063771123649, 0.4636476090008061],
+        };
+
+        assert_eq!(result.size, expected.size);
+        assert_eq!(result.data.len(), expected.data.len());
+        for i in 0..result.data.len() {
+            assert_eq!(result.data[i], expected.data[i], "Mismatch at index {}", i);
+        }
+    }
+
+    #[test]
+    fn test_atan2_negative_values() {
+        let y = Array2D {
+            size: [1, 3],
+            data: vec![-1.0, -2.0, -3.0],
+        };
+
+        let x = Array2D {
+            size: [1, 3],
+            data: vec![-4.0, -5.0, -6.0],
+        };
+
+        let result = atan2(&y, &x);
+
+        let expected = Array2D {
+            size: [1, 3],
+            data: vec![-2.896613990462929, -2.761086276477428, -2.677945044588987],
+        };
+
+        assert_eq!(result.size, expected.size);
+        assert_eq!(result.data.len(), expected.data.len());
+        for i in 0..result.data.len() {
+            assert_eq!(result.data[i], expected.data[i], "Mismatch at index {}", i);
+        }
     }
 }
