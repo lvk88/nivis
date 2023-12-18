@@ -53,13 +53,8 @@ const postprocess = async () => {
   const rgbDataArray = new Uint8ClampedArray(rgbBuffer);
   const imageData = new ImageData(rgbDataArray, s.width, s.height);
   const bitmap = await createImageBitmap(imageData);
-  //const ratio  = Math.min( hRatio, vRatio );
   context.drawImage(bitmap, 0,0, canvas.width, canvas.height);
   requestAnimationFrame(postprocess);
 }
 
 requestAnimationFrame(postprocess);
-
-window.onresize = ()=>{
-  console.log(window.innerWidth + " + " + window.innerHeight);
-};
