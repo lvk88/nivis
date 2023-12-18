@@ -140,6 +140,44 @@ impl Array2D{
     }
 }
 
+impl Add<Array2D> for Array2D{
+    type Output = Self;
+
+    fn add(self, rhs: Array2D) -> Array2D{
+        let data = self.data.iter().zip(rhs.data.iter()).map(|(l, r)|{
+            l + r
+        }).collect();
+
+        Array2D{
+            data,
+            ..self
+        }
+    }
+}
+
+impl Add<f64> for Array2D{
+    type Output = Self;
+
+    fn add(self, rhs: f64) -> Array2D{
+        let data = self.data.iter().map(|lhs|{
+           lhs + rhs
+        }).collect();
+
+        Array2D{
+            data,
+            ..self
+        }
+    }
+}
+
+impl Add<Array2D> for f64{
+    type Output = Array2D;
+
+    fn add(self, rhs: Array2D) -> Array2D{
+        rhs + self
+    }
+}
+
 fn atan2(y: &Array2D, x: &Array2D) -> Array2D{
     let data = y.data.iter().zip(x.data.iter()).map(|(y, x)|{
         y.atan2(*x)
@@ -263,5 +301,49 @@ mod tests {
         for i in 0..result.data.len() {
             assert_eq!(result.data[i], expected.data[i], "Mismatch at index {}", i);
         }
+    }
+
+    #[test]
+    fn test_add_arrays() {
+        let x = Array2D{
+            size: [1, 3],
+            data: vec![1.0, 2.0, 3.0]
+        };
+
+        let y = Array2D{
+            size: [1, 3],
+            data: vec![4.0, 5.0, 6.0]
+        };
+
+        let result = x + y;
+
+        assert_eq!(result.data[0], 5.0);
+        assert_eq!(result.data[1], 7.0);
+        assert_eq!(result.data[2], 9.0);
+    }
+
+    #[test]
+    fn test_add_scalar_toarray() {
+        let x = Array2D{
+            size: [1, 3],
+            data: vec![1.0, 2.0, 3.0]
+        };
+
+        let result = x + 5.;
+
+        assert_eq!(result.data[0], 6.0);
+        assert_eq!(result.data[1], 7.0);
+        assert_eq!(result.data[2], 8.0);
+
+        let x = Array2D{
+            size: [1, 3],
+            data: vec![1.0, 2.0, 3.0]
+        };
+
+        let result = x + 6.;
+
+        assert_eq!(result.data[0], 7.0);
+        assert_eq!(result.data[1], 8.0);
+        assert_eq!(result.data[2], 9.0);
     }
 }
