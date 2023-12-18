@@ -7,9 +7,9 @@
     "target": "esnext",
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "paths": {
-      "mywasm": ["../pkg/mywasm.js"]
+      "mywasm": ["../pkg/mywasm.js"],
     },
   }
 }

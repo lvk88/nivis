@@ -1,4 +1,5 @@
 import { Simulation } from 'mywasm';
+import { Pane } from 'tweakpane';
 
 const width = 150;
 const height = 150;
@@ -10,58 +11,42 @@ enum PostprocField{
   Temperature,
   Phi
 }
-let postprocField = PostprocField.Phi;
+
+const stringToPostprocField = new Map<string, PostprocField>([
+  ["Temperature", PostprocField.Temperature],
+  ["Phi", PostprocField.Phi]
+]);
+
+const simulationParams = {
+  kappa: 1.6,
+  delta: 0.04,
+  postprocField: "Phi"
+};
 
 const canvas = <HTMLCanvasElement>document.getElementById("postproc-area");
 canvas.width = canvasScale * width;
 canvas.height = canvasScale * height;
 const context = canvas.getContext("2d");
 
-const toggleFieldButton = <HTMLButtonElement>document.getElementById("toggle-field");
-toggleFieldButton.addEventListener("click", () => {
-  if(postprocField == PostprocField.Temperature){
-    postprocField = PostprocField.Phi;
-  } else {
-    postprocField = PostprocField.Temperature;
-  }
-});
+const paneContainer = document.getElementById("pane-container");
 
-const resetButton = <HTMLButtonElement>document.getElementById("reset-button");
-resetButton.addEventListener("click", () => {
+const pane = new Pane({container: paneContainer});
+pane.addBinding(simulationParams, 'kappa', {min: 0.8, max: 2.0, step: 0.01} );
+pane.addBinding(simulationParams, 'delta', {min: 0.0, max: 0.05, step: 0.005} );
+pane.addBinding(simulationParams, 'postprocField', { options: {phi: "Phi", temperature: "Temperature"} } );
+pane.addButton({title: "Restart"}).on('click', () => {
   s.reset();
 });
 
 
-// The kappa and delta sliders are repeated code: TODO refactor
-const kappaValue = <HTMLSpanElement>document.getElementById("kappa-value");
-kappaValue.innerText = s.kappa.toPrecision(2).toString();
-const kappaSlider = <HTMLInputElement>document.getElementById("kappa-slider");
-kappaSlider.value = s.kappa.toString();
-kappaSlider.addEventListener("input", (event) => {
-  console.log((event.target as HTMLInputElement).value);
-  const kappaValue = <HTMLSpanElement>document.getElementById("kappa-value");
-  kappaValue.innerText = (event.target as HTMLInputElement).value;
-  s.kappa = parseFloat((event.target as HTMLInputElement).value);
-});
-
-const deltaValue = <HTMLSpanElement>document.getElementById("delta-value");
-deltaValue.innerText = s.delta.toPrecision(2).toString();
-const deltaSlider = <HTMLInputElement>document.getElementById("delta-slider");
-deltaSlider.value = s.delta.toString();
-deltaSlider.addEventListener("input", (event) => {
-  console.log((event.target as HTMLInputElement).value);
-  const deltaValue = <HTMLSpanElement>document.getElementById("delta-value");
-  deltaValue.innerText = (event.target as HTMLInputElement).value;
-  s.delta = parseFloat((event.target as HTMLInputElement).value);
-});
-
-
 const postprocess = async () => {
+  s.kappa = simulationParams.kappa;
+  s.delta = simulationParams.delta;
   console.time("Simulation");
   s.step();
   console.timeEnd("Simulation");
   let rgbBuffer: Uint8Array = null;
-  if(postprocField == PostprocField.Phi){
+  if(stringToPostprocField.get(simulationParams.postprocField) == PostprocField.Phi){
     rgbBuffer = s.get_phi_rgb();
   } else {
     rgbBuffer = s.get_temperature_rgb();
