@@ -64,7 +64,7 @@ impl Simulation{
         let dy = 0.03;
         let grid = Rc::new(Grid::new([dx, dy], [width + 2, height + 2]));
 
-        let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.5);
+        let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
 
         let cx = (width / 2) as i64;
         let cy = (width / 2) as i64;
@@ -480,6 +480,31 @@ mod tests {
         assert_f64_near!(result.data[1], std::f64::consts::FRAC_1_SQRT_2);
         // TODO: understand how to do this assertion
         //assert_f64_near!(result.data[2], 0.0, 100000);
+    }
+
+    #[test]
+    fn test_get_temperature_and_phi_arrays(){
+        let s = Simulation::new(100, 100);
+
+        let temperature_rgb = s.get_temperature_rgb();
+        assert_eq!(temperature_rgb.len(), 100 * 100 * 4);
+
+        assert_eq!(temperature_rgb[0], COLORMAP[0].r);
+        assert_eq!(temperature_rgb[1], COLORMAP[0].g);
+        assert_eq!(temperature_rgb[2], COLORMAP[0].b);
+        assert_eq!(temperature_rgb[3], COLORMAP[0].a);
+
+        let phi_rgb = s.get_phi_rgb();
+        assert_eq!(phi_rgb.len(), 100 * 100 * 4);
+        assert_eq!(phi_rgb[0], COLORMAP[0].r);
+        assert_eq!(phi_rgb[1], COLORMAP[0].g);
+        assert_eq!(phi_rgb[2], COLORMAP[0].b);
+        assert_eq!(phi_rgb[3], COLORMAP[0].a);
+
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50], COLORMAP[9].r);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 1], COLORMAP[9].g);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 2], COLORMAP[9].b);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 3], COLORMAP[9].a);
     }
 
 }
