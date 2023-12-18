@@ -199,6 +199,14 @@ impl Simulation{
             }
         }
     }
+
+    pub fn get_temperature(&self, i: usize, j: usize) -> f32{
+        self.temperature.value(i + 1, j + 1)
+    }
+
+    pub fn get_phi(&self, i: usize, j: usize) -> f32{
+        self.phi.value(i + 1, j + 1)
+    }
 }
 
 #[cfg(test)]
