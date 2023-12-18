@@ -2,7 +2,21 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/bootstrap.ts',
+  devtool: 'inline-source-map',
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+    modules: ["../pkg", "node_modules"]
+  },
   output: {
     filename: 'main.js',
     path: path.resolve(__dirname, 'dist'),
@@ -18,4 +32,7 @@ module.exports = {
       ],
     }),
   ],
+  experiments:{
+    asyncWebAssembly: true
+  }
 };
