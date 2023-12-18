@@ -9,7 +9,7 @@
     "allowJs": true,
     "moduleResolution": "node",
     "paths": {
-      "mywasm": ["../pkg/mywasm.js"],
+      "nivis": ["../pkg/nivis.js"],
     },
   }
 }

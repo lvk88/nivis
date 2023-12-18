@@ -24,7 +24,7 @@ module.exports = {
     filename: 'main.js',
     path: path.resolve(__dirname, 'dist'),
   },
-  mode: 'development',
+  mode: 'production',
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
@@ -56,7 +56,7 @@ module.exports = {
                 outDir: "pkg",
 
                 // The same as the `--out-name` option for `wasm-pack`
-                outName: "mywasm",
+                outName: "nivis",
 
                 // If defined, `forceWatch` will force activate/deactivate watch mode for
                 // `.rs` files.

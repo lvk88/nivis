@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mywasm": "file:../pkg",
+    "nivis": "file:../pkg",
     "tweakpane": "^4.0.2"
   },
   "devDependencies": {

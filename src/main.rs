@@ -1,4 +1,4 @@
-use mywasm::Simulation;
+use nivis::Simulation;
 
 use std::time::Instant;
 
