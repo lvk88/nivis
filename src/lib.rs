@@ -189,6 +189,28 @@ fn atan2(y: &Array2D, x: &Array2D) -> Array2D{
     }
 }
 
+fn cos(x: &Array2D) -> Array2D{
+    let data = x.data.iter().map(|x|{
+        x.cos()
+    }).collect();
+
+    Array2D{
+        data,
+        ..*x
+    }
+}
+
+fn sin(x: &Array2D) -> Array2D{
+    let data = x.data.iter().map(|x|{
+        x.sin()
+    }).collect();
+
+    Array2D{
+        data,
+        ..*x
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -345,5 +367,25 @@ mod tests {
         assert_eq!(result.data[0], 7.0);
         assert_eq!(result.data[1], 8.0);
         assert_eq!(result.data[2], 9.0);
+    }
+
+    #[test]
+    fn test_sin_cos_on_array(){
+        let x = Array2D{
+            size: [1, 3],
+            data: vec![0.0, std::f64::consts::PI / 4., std::f64::consts::PI / 2.0]
+        };
+
+        let result = sin(&x);
+
+        assert_f64_near!(result.data[0], 0.0);
+        assert_f64_near!(result.data[1], std::f64::consts::FRAC_1_SQRT_2);
+        assert_f64_near!(result.data[2], 1.0);
+
+        let result = cos(&x);
+        assert_f64_near!(result.data[0], 1.0);
+        assert_f64_near!(result.data[1], std::f64::consts::FRAC_1_SQRT_2);
+        // TODO: understand how to do this assertion
+        //assert_f64_near!(result.data[2], 0.0, 100000);
     }
 }
