@@ -235,6 +235,24 @@ impl Simulation{
 
         self.temperature = temperature;
         self.phi = phi;
+
+    }
+
+    pub fn add_seed(&mut self, x: i32, y: i32){
+        for j in -2..2{
+            if (y + j) < 0 || (y + j) as usize > self.height{
+                continue;
+            }
+            for i in -2..2{
+                if (x + j) < 0 || (x + i) as usize > self.width{
+                    continue;
+                }
+                let cx = (x + i) as usize;
+                let cy = (y + j) as usize;
+                let index = self.phi.data.ravel(cx, cy);
+                self.phi.data.data[index] = 1.0;
+            }
+        }
     }
 }
 
