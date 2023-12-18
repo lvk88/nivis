@@ -42,6 +42,19 @@ struct RGBA{
     a: u8
 }
 
+const COLORMAP_BLUE_TO_WHITE: [RGBA; 10] = [
+    RGBA{r: 30,  g: 65,  b: 101, a: 255},
+    RGBA{r: 52,  g: 111, b: 171, a: 255},
+    RGBA{r: 94,  g: 141, b: 188, a: 255},
+    RGBA{r: 126, g: 163, b: 201, a: 255},
+    RGBA{r: 152, g: 182, b: 212, a: 255},
+    RGBA{r: 175, g: 198, b: 222, a: 255},
+    RGBA{r: 196, g: 213, b: 230, a: 255},
+    RGBA{r: 214, g: 226, b: 238, a: 255},
+    RGBA{r: 232, g: 238, b: 245, a: 255},
+    RGBA{r: 247, g: 250, b: 252, a: 255}
+];
+
 const COLORMAP_COOL_TO_WARM: [RGBA; 10] = [
     RGBA{r: 58,  g: 76,  b: 192, a: 255},
     RGBA{r: 88,  g: 118, b: 226, a: 255},
@@ -104,7 +117,7 @@ impl Simulation{
             let value = self.phi.value(i + 1, j + 1);
             let clamped_val = value.clamp(0.0, 1.0);
             let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f64 - 1.0) as usize;
-            let start_color = &COLORMAP_COOL_TO_WARM[index];
+            let start_color = &COLORMAP_BLUE_TO_WHITE[index];
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
     }
