@@ -4,10 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Index</title>
+    <style>
+ body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Disable scrolling on the body and html elements */
+        }
+
+        #canvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #postproc-area {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 10px; /* Adjust top distance as needed */
+            left: 10px; /* Adjust left distance as needed */
+            color: #000; /* Set your desired text color */
+            z-index: 1; /* Set a higher z-index to ensure it's above the canvas */
+        }
+  </style>
   </head>
   <body>
-    <div id="pane-container"></div>
-    <canvas id="postproc-area"></canvas>
+    <div id="canvasContainer">
+    <div id="pane-container" class="overlay"></div>
+    <canvas id="postproc-area">
+    </canvas>
+    </div>
   </body>
   <script src="./main.js"></script>
 </html>

@@ -1,9 +1,15 @@
 import { Simulation } from 'mywasm';
 import { Pane } from 'tweakpane';
 
-const width = 150;
-const height = 150;
+//const width = 150;
+//const height = 150;
+//const canvasScale = 3;
+const canvas = <HTMLCanvasElement>document.getElementById("postproc-area");
 const canvasScale = 3;
+const width = canvas.clientWidth / canvasScale;
+const height = canvas.clientHeight / canvasScale;
+const context = canvas.getContext("2d");
+
 
 const s = new Simulation(width, height);
 
@@ -22,11 +28,6 @@ const simulationParams = {
   delta: 0.04,
   postprocField: "Phi"
 };
-
-const canvas = <HTMLCanvasElement>document.getElementById("postproc-area");
-canvas.width = canvasScale * width;
-canvas.height = canvasScale * height;
-const context = canvas.getContext("2d");
 
 const paneContainer = document.getElementById("pane-container");
 
@@ -52,9 +53,12 @@ const postprocess = async () => {
     rgbBuffer = s.get_temperature_rgb();
   }
   const rgbDataArray = new Uint8ClampedArray(rgbBuffer);
-  const imageData = new ImageData(rgbDataArray, width, height);
+  const imageData = new ImageData(rgbDataArray, s.width, s.height);
   const bitmap = await createImageBitmap(imageData);
-  context.drawImage(bitmap, 0, 0, 3 * width, 3 * height);
+  const hRatio = canvas.width / bitmap.width;
+  const vRatio = canvas.height / bitmap.height;
+  const ratio  = Math.min( hRatio, vRatio );
+  context.drawImage(bitmap, 0,0, bitmap.width, bitmap.height, 0,0,bitmap.width*ratio, bitmap.height*ratio);
   requestAnimationFrame(postprocess);
 }
 
