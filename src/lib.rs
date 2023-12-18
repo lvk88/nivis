@@ -332,6 +332,42 @@ impl GridData{
             data: result_array
         }
     }
+
+    pub fn diff_all(&self) -> (GridData, GridData, GridData){
+        let grid = self.grid.upgrade().unwrap();
+
+        let mut dfdx = vec![0.; grid.size[0] * grid.size[1]];
+        let mut dfdy = vec![0.; grid.size[0] * grid.size[1]];
+        let mut lap  = vec![0.; grid.size[0] * grid.size[1]];
+
+        (1..grid.size[1] - 1).cartesian_product(1..grid.size[0] - 1).for_each(|(j,i)|{
+            let index = self.data.ravel(i,j);
+
+            dfdx[index] = (self.data.value(i + 1, j) - self.data.value(i - 1, j)) / (2. * grid.delta[0]);
+            dfdy[index] = (self.data.value(i, j + 1) - self.data.value(i, j - 1)) / (2. * grid.delta[1]);
+
+            let ddx = (self.data.value(i + 1, j) - 2. * self.data.value(i, j) + self.data.value(i - 1, j)) / (grid.delta[0] * grid.delta[0]);
+            let ddy = (self.data.value(i, j + 1) - 2. * self.data.value(i, j) + self.data.value(i, j - 1)) / (grid.delta[1] * grid.delta[1]);
+
+
+            lap[index] = ddx + ddy;
+        });
+
+        (
+            GridData{
+                grid: Rc::downgrade(&grid),
+                data: Array2D{data: dfdx, size: grid.size}
+            },
+            GridData{
+                grid: Rc::downgrade(&grid),
+                data: Array2D{data: dfdy, size: grid.size}
+            },
+            GridData{
+                grid: Rc::downgrade(&grid),
+                data: Array2D{data: lap, size: grid.size}
+            },
+        )
+    }
 }
 
 impl Grid{
@@ -488,6 +524,26 @@ mod tests {
 
         println!("{:?}", grid_data.data.data);
         println!("{:?}", laplace.data.data);
+
+        assert_f32_near!(laplace.value(0,0), 0.0);
+        assert_f32_near!(laplace.value(1,0), 0.0);
+        assert_f32_near!(laplace.value(1,1), 4.0);
+    }
+
+    #[test]
+    fn diff_all() {
+        let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
+        let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x * x + y * y });
+
+        let (dfdx, dfdy, laplace) = grid_data.diff_all();
+
+        assert_f32_near!(dfdx.value(0,0), 0.0);
+        assert_f32_near!(dfdx.value(1,0), 0.0);
+        assert_f32_near!(dfdx.value(1,1), 0.2);
+
+        assert_f32_near!(dfdy.value(0,0), 0.0);
+        assert_f32_near!(dfdy.value(1,0), 0.0);
+        assert_f32_near!(dfdy.value(1,1), 0.4);
 
         assert_f32_near!(laplace.value(0,0), 0.0);
         assert_f32_near!(laplace.value(1,0), 0.0);
