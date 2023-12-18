@@ -32,9 +32,9 @@ const simulationParams = {
 const paneContainer = document.getElementById("pane-container");
 
 const pane = new Pane({container: paneContainer});
-pane.addBinding(simulationParams, 'kappa', {min: 0.8, max: 2.0, step: 0.01} );
-pane.addBinding(simulationParams, 'delta', {min: 0.0, max: 0.05, step: 0.005} );
-pane.addBinding(simulationParams, 'postprocField', { options: {phi: "Phi", temperature: "Temperature"} } );
+pane.addBinding(simulationParams, 'kappa', {label: "κ", min: 0.8, max: 2.0, step: 0.01} );
+pane.addBinding(simulationParams, 'delta', {label: "δ", min: 0.0, max: 0.05, step: 0.005} );
+pane.addBinding(simulationParams, 'postprocField', {label: "Show...", options: {phi: "Phi", temperature: "Temperature"} } );
 pane.addButton({title: "Restart"}).on('click', () => {
   s.reset();
 });
