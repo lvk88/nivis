@@ -42,16 +42,23 @@ pane.addButton({title: "Restart"}).on('click', () => {
   s.reset();
 });
 
-const btn = pane.addButton({title: "Pause"});
-btn.on('click', () => {
+const playPauseButton = pane.addButton({title: "Pause"});
+playPauseButton.on('click', () => {
   if(!isPaused()){
     cancelAnimationFrame(animationFrameID);
-    btn.title = "Play";
+    playPauseButton.title = "Play";
     animationFrameID = null;
   } else {
-    btn.title = "Pause";
+    playPauseButton.title = "Pause";
     requestAnimationFrame(postprocess);
   }
+});
+
+pane.addButton({title: "Export PNG"}).on('click', () => {
+  const fakeLink = document.createElement('a');
+  fakeLink.download = 'snowflake.png';
+  fakeLink.href = canvas.toDataURL();
+  fakeLink.click();
 });
 
 
