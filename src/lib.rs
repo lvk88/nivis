@@ -447,7 +447,7 @@ mod tests {
         let data2 = Array2D::new(grid.size);
         let grid_data_2 = GridData::new(Rc::downgrade(&grid), data2);
 
-        assert_f32!(grid_data.data.data[0], 0.);
+        assert_f32_near!(grid_data.data.data[0], 0.);
         assert_f32_near!(grid_data_2.data.data[0], 0.);
     }
 
@@ -510,7 +510,7 @@ mod tests {
 
         let expected = Array2D {
             size: [1, 3],
-            data: vec![0.24497866312686414, 0.3805063771123649, 0.4636476090008061],
+            data: vec![0.24497867, 0.3805064, 0.46364760],
         };
 
         assert_eq!(result.size, expected.size);
@@ -624,15 +624,15 @@ mod tests {
 
         let phi_rgb = s.get_phi_rgb();
         assert_eq!(phi_rgb.len(), 100 * 100 * 4);
-        assert_eq!(phi_rgb[0], COLORMAP_COOL_TO_WARM[0].r);
-        assert_eq!(phi_rgb[1], COLORMAP_COOL_TO_WARM[0].g);
-        assert_eq!(phi_rgb[2], COLORMAP_COOL_TO_WARM[0].b);
-        assert_eq!(phi_rgb[3], COLORMAP_COOL_TO_WARM[0].a);
+        assert_eq!(phi_rgb[0], COLORMAP_BLUE_TO_WHITE[0].r);
+        assert_eq!(phi_rgb[1], COLORMAP_BLUE_TO_WHITE[0].g);
+        assert_eq!(phi_rgb[2], COLORMAP_BLUE_TO_WHITE[0].b);
+        assert_eq!(phi_rgb[3], COLORMAP_BLUE_TO_WHITE[0].a);
 
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50], COLORMAP_COOL_TO_WARM[9].r);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 1], COLORMAP_COOL_TO_WARM[9].g);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 2], COLORMAP_COOL_TO_WARM[9].b);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 3], COLORMAP_COOL_TO_WARM[9].a);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50], COLORMAP_BLUE_TO_WHITE[9].r);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 1], COLORMAP_BLUE_TO_WHITE[9].g);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 2], COLORMAP_BLUE_TO_WHITE[9].b);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 3], COLORMAP_BLUE_TO_WHITE[9].a);
     }
 
 }
