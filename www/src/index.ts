@@ -6,8 +6,14 @@ const canvasScale = 3;
 canvas.width = canvas.clientWidth / canvasScale;
 canvas.height = canvas.clientHeight / canvasScale;
 
-const context = canvas.getContext("2d");
+canvas.addEventListener('mousedown', (event: MouseEvent) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / canvasScale;
+  const y = (event.clientY - rect.top) / canvasScale;
+  s.add_seed(x, y);
+});
 
+const context = canvas.getContext("2d");
 
 const s = new Simulation(canvas.width, canvas.height);
 
