@@ -31,6 +31,8 @@ resetButton.addEventListener("click", () => {
   s.reset();
 });
 
+
+// The kappa and delta sliders are repeated code: TODO refactor
 const kappaValue = <HTMLSpanElement>document.getElementById("kappa-value");
 kappaValue.innerText = s.kappa.toPrecision(2).toString();
 const kappaSlider = <HTMLInputElement>document.getElementById("kappa-slider");
