@@ -1,7 +1,7 @@
 import { Simulation } from 'mywasm';
 
-const width = 600;
-const height = 300;
+const width = 150;
+const height = 150;
 const canvasScale = 3;
 
 const s = new Simulation(width, height);
@@ -34,19 +34,23 @@ resetButton.addEventListener("click", () => {
 const kappaValue = <HTMLSpanElement>document.getElementById("kappa-value");
 kappaValue.innerText = s.kappa.toPrecision(2).toString();
 const kappaSlider = <HTMLInputElement>document.getElementById("kappa-slider");
+kappaSlider.value = s.kappa.toString();
 kappaSlider.addEventListener("input", (event) => {
   console.log((event.target as HTMLInputElement).value);
   const kappaValue = <HTMLSpanElement>document.getElementById("kappa-value");
   kappaValue.innerText = (event.target as HTMLInputElement).value;
+  s.kappa = parseFloat((event.target as HTMLInputElement).value);
 });
 
 const deltaValue = <HTMLSpanElement>document.getElementById("delta-value");
 deltaValue.innerText = s.delta.toPrecision(2).toString();
 const deltaSlider = <HTMLInputElement>document.getElementById("delta-slider");
+deltaSlider.value = s.delta.toString();
 deltaSlider.addEventListener("input", (event) => {
   console.log((event.target as HTMLInputElement).value);
   const deltaValue = <HTMLSpanElement>document.getElementById("delta-value");
   deltaValue.innerText = (event.target as HTMLInputElement).value;
+  s.delta = parseFloat((event.target as HTMLInputElement).value);
 });
 
 
