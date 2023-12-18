@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use web_sys::console;
+
 use std::ops::{Add, Sub};
 
 use std::rc::{Rc, Weak};
@@ -123,6 +125,7 @@ impl Simulation{
     }
 
     pub fn step(&mut self){
+        console::time_with_label("Simulation::step");
         let delta_t = 1e-4;
         let epsilonb = 0.01;
         let delta = 0.04;
@@ -203,6 +206,7 @@ impl Simulation{
 
         self.temperature.data.data = new_temperature;
         self.phi.data.data = new_phi;
+        console::time_end_with_label("Simulation::step");
     }
 }
 
