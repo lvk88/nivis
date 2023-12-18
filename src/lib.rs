@@ -34,6 +34,8 @@ pub struct Simulation{
     dx: f32,
     dy: f32,
     grid: Rc<Grid>,
+    pub kappa: f32,
+    pub delta: f32,
     temperature: GridData,
     phi: GridData
 }
@@ -87,6 +89,9 @@ impl Simulation{
         let cy = (height / 2) as i64;
         let radius = 5;
 
+        let kappa = 1.6;
+        let delta = 0.04;
+
         let phi = GridData::new_with_function(Rc::downgrade(&grid), |x, y|{
             let i = (x / dx).floor() as i64;
             let j = (y / dy).floor() as i64;
@@ -102,6 +107,8 @@ impl Simulation{
             height,
             dx,
             dy,
+            kappa,
+            delta,
             grid,
             temperature,
             phi
@@ -129,17 +136,14 @@ impl Simulation{
     }
 
     pub fn step(&mut self){
-        console::time_with_label("Simulation::step");
         let delta_t = 1e-4;
         let epsilonb = 0.01;
-        let delta = 0.04;
         let aniso = 6.0;
         let theta0 = 0.0;
         let alpha = 0.9;
         let gamma = 10.0;
         let teq = 1.0;
         let tau = 0.0003;
-        let kappa = 1.6;
 
         let dphidx = self.phi.diff_x();
         let dphidy = self.phi.diff_y();
@@ -154,11 +158,11 @@ impl Simulation{
         }).collect();
 
         let epsilon: Vec<f32> = aniso_x_theta_theta0.iter().map(|val|{
-            epsilonb * (1. + delta * val.cos())
+            epsilonb * (1. + self.delta * val.cos())
         }).collect();
 
         let depsilondtheta: Vec<f32> = aniso_x_theta_theta0.iter().map(|val|{
-            -epsilonb * aniso * delta * val.sin()
+            -epsilonb * aniso * self.delta * val.sin()
         }).collect();
 
         let epsilon_x_depsilondtheta: Vec<f32> = epsilon.iter().zip(depsilondtheta.iter()).map(|(eps, deps)|{
@@ -205,12 +209,11 @@ impl Simulation{
         }).collect();
 
         let new_temperature: Vec<f32> = (0..self.temperature.data.data.len()).map(|i|{
-            self.temperature.data.data[i] + delta_t * laplace_temperature.data.data[i] + kappa * (new_phi[i] - self.phi.data.data[i])
+            self.temperature.data.data[i] + delta_t * laplace_temperature.data.data[i] + self.kappa * (new_phi[i] - self.phi.data.data[i])
         }).collect();
 
         self.temperature.data.data = new_temperature;
         self.phi.data.data = new_phi;
-        console::time_end_with_label("Simulation::step");
     }
 
     pub fn reset(&mut self){
