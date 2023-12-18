@@ -7,8 +7,8 @@ enum PostprocField{
 
 let postprocField = PostprocField.Temperature;
 
-const width = 100;
-const height = 100;
+const width = 300;
+const height = 300;
 
 const canvasScale = 3;
 
@@ -43,5 +43,11 @@ const postprocess = async () => {
   const bitmap = await createImageBitmap(imageData);
   context.drawImage(bitmap, 0, 0, 3 * width, 3 * height);
 }
+
+for(let i = 0; i < 1000; ++i){
+  s.step();
+  await postprocess();
+}
+
 
 postprocess();

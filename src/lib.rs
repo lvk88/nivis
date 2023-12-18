@@ -121,6 +121,89 @@ impl Simulation{
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
     }
+
+    pub fn step(&mut self){
+        let delta_t = 1e-4;
+        let epsilonb = 0.01;
+        let delta = 0.04;
+        let aniso = 6.0;
+        let theta0 = 0.0;
+        let alpha = 0.9;
+        let gamma = 10.0;
+        let teq = 1.0;
+        let tau = 0.0003;
+        let kappa = 1.6;
+
+        let dphidx = self.phi.diff_x();
+        let dphidy = self.phi.diff_y();
+
+        let laplace_phi = self.phi.laplace();
+        let laplace_temperature = self.temperature.laplace();
+
+        let theta = atan2(&dphidy.data, &dphidx.data);
+
+        let aniso_x_theta_theta0: Vec<f64> = theta.data.iter().map(|val|{
+            aniso * (val - theta0)
+        }).collect();
+
+        let epsilon: Vec<f64> = aniso_x_theta_theta0.iter().map(|val|{
+            epsilonb * (1. + delta * val.cos())
+        }).collect();
+
+        let depsilondtheta: Vec<f64> = aniso_x_theta_theta0.iter().map(|val|{
+            -epsilonb * aniso * delta * val.sin()
+        }).collect();
+
+        let epsilon_x_depsilondtheta: Vec<f64> = epsilon.iter().zip(depsilondtheta.iter()).map(|(eps, deps)|{
+            eps * deps
+        }).collect();
+
+        let term1: Vec<f64> = epsilon_x_depsilondtheta.iter().zip(dphidx.data.data.iter()).map(|(lhs, rhs)|{
+            lhs * rhs
+        }).collect();
+
+        let term1 = Array2D{
+            data: term1,
+            size: self.temperature.data.size.clone()
+        };
+
+        let term1 = GridData{
+            data: term1,
+            grid: dphidx.grid.clone()
+        };
+        let term1 = term1.diff_y();
+
+        let term2: Vec<f64> = epsilon_x_depsilondtheta.iter().zip(dphidy.data.data.iter()).map(|(lhs, rhs)|{
+            lhs * rhs
+        }).collect();
+
+        let term2 = Array2D{
+            data: term2,
+            size: self.temperature.data.size.clone()
+        };
+
+        let term2 = GridData{
+            data: term2,
+            grid: dphidx.grid.clone()
+        };
+
+        let term2 = term2.diff_x();
+
+        let m: Vec<f64> = self.temperature.data.data.iter().map(|val|{
+            alpha / std::f64::consts::PI * (gamma * (teq - val)).atan()
+        }).collect();
+
+        let new_phi: Vec<f64> = (0..self.phi.data.data.len()).map(|i|{
+            self.phi.data.data[i] + (delta_t / tau) * (term1.data.data[i] - term2.data.data[i] + epsilon[i] * epsilon[i] * laplace_phi.data.data[i] + self.phi.data.data[i] * (1.0 - self.phi.data.data[i]) * (self.phi.data.data[i] - 0.5 + m[i]))
+        }).collect();
+
+        let new_temperature: Vec<f64> = (0..self.temperature.data.data.len()).map(|i|{
+            self.temperature.data.data[i] + delta_t * laplace_temperature.data.data[i] + kappa * (new_phi[i] - self.phi.data.data[i])
+        }).collect();
+
+        self.temperature.data.data = new_temperature;
+        self.phi.data.data = new_phi;
+    }
 }
 
 impl GridData{
