@@ -5,10 +5,10 @@ enum PostprocField{
   Phi
 }
 
-let postprocField = PostprocField.Temperature;
+let postprocField = PostprocField.Phi;
 
-const width = 600;
-const height = 300;
+const width = 200;
+const height = 100;
 
 const canvasScale = 3;
 
@@ -24,7 +24,6 @@ toggleFieldButton.addEventListener("click", () => {
   } else {
     postprocField = PostprocField.Temperature;
   }
-  postprocess();
 });
 
 const context = canvas.getContext("2d");
@@ -32,6 +31,7 @@ const context = canvas.getContext("2d");
 const s = new Simulation(width, height);
 
 const postprocess = async () => {
+  s.step();
   let rgbBuffer: Uint8Array = null;
   if(postprocField == PostprocField.Phi){
     rgbBuffer = s.get_phi_rgb();
@@ -42,14 +42,7 @@ const postprocess = async () => {
   const imageData = new ImageData(rgbDataArray, width, height);
   const bitmap = await createImageBitmap(imageData);
   context.drawImage(bitmap, 0, 0, 3 * width, 3 * height);
+  requestAnimationFrame(postprocess);
 }
 
-for(let i = 0; i < 1000; ++i){
-  s.step();
-  console.time("postprocess");
-  await postprocess();
-  console.timeEnd("postprocess");
-}
-
-
-postprocess();
+requestAnimationFrame(postprocess);
