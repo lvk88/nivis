@@ -6,8 +6,6 @@ const canvasScale = 3;
 canvas.width = canvas.clientWidth / canvasScale;
 canvas.height = canvas.clientHeight / canvasScale;
 
-console.log(canvas.clientWidth+ " x " + canvas.clientHeight);
-
 const context = canvas.getContext("2d");
 
 
@@ -43,7 +41,9 @@ pane.addButton({title: "Restart"}).on('click', () => {
 const postprocess = async () => {
   s.kappa = simulationParams.kappa;
   s.delta = simulationParams.delta;
+  //console.time("step");
   s.step();
+  //console.timeEnd("step");
   let rgbBuffer: Uint8Array = null;
   if(stringToPostprocField.get(simulationParams.postprocField) == PostprocField.Phi){
     rgbBuffer = s.get_phi_rgb();
