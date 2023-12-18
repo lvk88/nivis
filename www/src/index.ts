@@ -27,8 +27,13 @@ const simulationParams = {
   postprocField: "Phi"
 };
 
-const paneContainer = document.getElementById("pane-container");
+let animationFrameID : number = null;
 
+const isPaused = () => {
+  return animationFrameID == null;
+}
+
+const paneContainer = document.getElementById("pane-container");
 const pane = new Pane({container: paneContainer});
 pane.addBinding(simulationParams, 'kappa', {label: "κ", min: 0.8, max: 2.0, step: 0.01} );
 pane.addBinding(simulationParams, 'delta', {label: "δ", min: 0.0, max: 0.05, step: 0.005} );
@@ -37,8 +42,20 @@ pane.addButton({title: "Restart"}).on('click', () => {
   s.reset();
 });
 
+const btn = pane.addButton({title: "Pause"});
+btn.on('click', () => {
+  if(!isPaused()){
+    cancelAnimationFrame(animationFrameID);
+    btn.title = "Play";
+    animationFrameID = null;
+  } else {
+    btn.title = "Pause";
+    requestAnimationFrame(postprocess);
+  }
+});
 
-const postprocess = async () => {
+
+const postprocess = () => {
   s.kappa = simulationParams.kappa;
   s.delta = simulationParams.delta;
   //console.time("step");
@@ -52,9 +69,10 @@ const postprocess = async () => {
   }
   const rgbDataArray = new Uint8ClampedArray(rgbBuffer);
   const imageData = new ImageData(rgbDataArray, s.width, s.height);
-  const bitmap = await createImageBitmap(imageData);
-  context.drawImage(bitmap, 0,0, canvas.width, canvas.height);
-  requestAnimationFrame(postprocess);
+  createImageBitmap(imageData).then((bitmap) => {
+    context.drawImage(bitmap, 0,0, canvas.width, canvas.height);
+  });
+  animationFrameID = requestAnimationFrame(postprocess);
 }
 
-requestAnimationFrame(postprocess);
+animationFrameID = requestAnimationFrame(postprocess);
