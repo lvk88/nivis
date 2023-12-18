@@ -4,12 +4,12 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "esnext",
-    "target": "es5",
+    "target": "esnext",
     "jsx": "react",
     "allowJs": true,
     "moduleResolution": "bundler",
     "paths": {
-      "*": ["../pkg"]
-    }
+      "mywasm": ["../pkg/mywasm.js"]
+    },
   }
 }

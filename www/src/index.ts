@@ -1,4 +1,6 @@
-import { name } from "mywasm";
+import { get_name, alert_user } from 'mywasm';
 
-console.log(name());
+console.log(get_name());
+
+alert_user()
 
