@@ -25,24 +25,88 @@ pub struct GridData{
     data: Array2D
 }
 
+#[wasm_bindgen]
 pub struct Simulation{
+    pub width: usize,
+    pub height: usize,
     grid: Rc<Grid>,
-    temperature: GridData
+    temperature: GridData,
     phi: GridData
 }
 
-impl Simulation{
-    pub fn new(width: usize, height: usize) -> Simulation{
-        let grid = Rc::new(Grid::new([0.03, 0.03], [width, height]));
+#[repr(C)]
+struct RGBA{
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8
+}
 
-        let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
-        let phi = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
+const COLORMAP: [RGBA; 10] = [
+    RGBA{r: 58,  g: 76,  b: 192, a: 255},
+    RGBA{r: 88,  g: 118, b: 226, a: 255},
+    RGBA{r: 123, g: 158, b: 248, a: 255},
+    RGBA{r: 157, g: 189, b: 254, a: 255},
+    RGBA{r: 192, g: 211, b: 245, a: 255},
+    RGBA{r: 221, g: 220, b: 219, a: 255},
+    RGBA{r: 241, g: 202, b: 182, a: 255},
+    RGBA{r: 246, g: 171, b: 141, a: 255},
+    RGBA{r: 237, g: 132, b: 103, a: 255},
+    RGBA{r: 214, g: 82,  b: 67 , a: 255}
+];
+
+#[wasm_bindgen]
+impl Simulation{
+
+    #[wasm_bindgen(constructor)]
+    pub fn new(width: usize, height: usize) -> Simulation{
+        let dx = 0.03;
+        let dy = 0.03;
+        let grid = Rc::new(Grid::new([dx, dy], [width + 2, height + 2]));
+
+        let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.5);
+
+        let cx = (width / 2) as i64;
+        let cy = (width / 2) as i64;
+        let radius = 5;
+
+        let phi = GridData::new_with_function(Rc::downgrade(&grid), |x, y|{
+            let i = (x / dx).floor() as i64;
+            let j = (y / dy).floor() as i64;
+            if (i - cx) * (i - cx) + (j - cy) * (j - cy) < radius * radius{
+                1.0
+            }else{
+                0.0
+            }
+        });
 
         Simulation{
+            width,
+            height,
             grid,
             temperature,
             phi
         }
+    }
+
+    pub fn get_temperature_rgb(&self) -> Vec<u8>{
+        (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
+            let value = self.temperature.value(i + 1, j + 1);
+            let clamped_val = value.clamp(0.0, 1.0);
+            let index = (clamped_val * COLORMAP.len() as f64 - 1.0) as usize;
+            let start_color = &COLORMAP[index];
+            [start_color.r, start_color.g, start_color.b, start_color.a]
+        }).flatten().collect()
+    }
+
+    pub fn get_phi_rgb(&self) -> Vec<u8>{
+        (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
+            let value = self.phi.value(i + 1, j + 1);
+            let clamped_val = value.clamp(0.0, 1.0);
+            let index = (clamped_val * COLORMAP.len() as f64 - 1.0) as usize;
+            let start_color = &COLORMAP[index];
+            [start_color.r, start_color.g, start_color.b, start_color.a]
+        }).flatten().collect()
     }
 }
 
@@ -417,4 +481,5 @@ mod tests {
         // TODO: understand how to do this assertion
         //assert_f64_near!(result.data[2], 0.0, 100000);
     }
+
 }
