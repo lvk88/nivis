@@ -7,7 +7,7 @@ enum PostprocField{
 
 let postprocField = PostprocField.Temperature;
 
-const width = 300;
+const width = 600;
 const height = 300;
 
 const canvasScale = 3;
@@ -46,7 +46,9 @@ const postprocess = async () => {
 
 for(let i = 0; i < 1000; ++i){
   s.step();
+  console.time("postprocess");
   await postprocess();
+  console.timeEnd("postprocess");
 }
 
 

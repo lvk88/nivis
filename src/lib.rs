@@ -11,13 +11,13 @@ use itertools::Itertools;
 // This is just a 2D array
 pub struct Array2D{
     size: [usize; 2],
-    data: Vec<f64>
+    data: Vec<f32>
 }
 
 
 // This stores the geometry of a grid, i.e. the spacing between grid nodes
 pub struct Grid{
-    delta: [f64; 2],
+    delta: [f32; 2],
     size: [usize; 2],
 }
 
@@ -82,7 +82,7 @@ impl Simulation{
         let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
 
         let cx = (width / 2) as i64;
-        let cy = (width / 2) as i64;
+        let cy = (height / 2) as i64;
         let radius = 5;
 
         let phi = GridData::new_with_function(Rc::downgrade(&grid), |x, y|{
@@ -105,20 +105,20 @@ impl Simulation{
     }
 
     pub fn get_temperature_rgb(&self) -> Vec<u8>{
-        (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
+        (0..self.height).cartesian_product(0..self.width).map(|(j,i)|{
             let value = self.temperature.value(i + 1, j + 1);
             let clamped_val = value.clamp(0.0, 1.0);
-            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f64 - 1.0) as usize;
+            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f32 - 1.0) as usize;
             let start_color = &COLORMAP_COOL_TO_WARM[index];
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
     }
 
     pub fn get_phi_rgb(&self) -> Vec<u8>{
-        (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
+        (0..self.height).cartesian_product(0..self.width).map(|(j,i)|{
             let value = self.phi.value(i + 1, j + 1);
             let clamped_val = value.clamp(0.0, 1.0);
-            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f64 - 1.0) as usize;
+            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f32 - 1.0) as usize;
             let start_color = &COLORMAP_BLUE_TO_WHITE[index];
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
@@ -145,23 +145,23 @@ impl Simulation{
 
         let theta = atan2(&dphidy.data, &dphidx.data);
 
-        let aniso_x_theta_theta0: Vec<f64> = theta.data.iter().map(|val|{
+        let aniso_x_theta_theta0: Vec<f32> = theta.data.iter().map(|val|{
             aniso * (val - theta0)
         }).collect();
 
-        let epsilon: Vec<f64> = aniso_x_theta_theta0.iter().map(|val|{
+        let epsilon: Vec<f32> = aniso_x_theta_theta0.iter().map(|val|{
             epsilonb * (1. + delta * val.cos())
         }).collect();
 
-        let depsilondtheta: Vec<f64> = aniso_x_theta_theta0.iter().map(|val|{
+        let depsilondtheta: Vec<f32> = aniso_x_theta_theta0.iter().map(|val|{
             -epsilonb * aniso * delta * val.sin()
         }).collect();
 
-        let epsilon_x_depsilondtheta: Vec<f64> = epsilon.iter().zip(depsilondtheta.iter()).map(|(eps, deps)|{
+        let epsilon_x_depsilondtheta: Vec<f32> = epsilon.iter().zip(depsilondtheta.iter()).map(|(eps, deps)|{
             eps * deps
         }).collect();
 
-        let term1: Vec<f64> = epsilon_x_depsilondtheta.iter().zip(dphidx.data.data.iter()).map(|(lhs, rhs)|{
+        let term1: Vec<f32> = epsilon_x_depsilondtheta.iter().zip(dphidx.data.data.iter()).map(|(lhs, rhs)|{
             lhs * rhs
         }).collect();
 
@@ -176,7 +176,7 @@ impl Simulation{
         };
         let term1 = term1.diff_y();
 
-        let term2: Vec<f64> = epsilon_x_depsilondtheta.iter().zip(dphidy.data.data.iter()).map(|(lhs, rhs)|{
+        let term2: Vec<f32> = epsilon_x_depsilondtheta.iter().zip(dphidy.data.data.iter()).map(|(lhs, rhs)|{
             lhs * rhs
         }).collect();
 
@@ -192,15 +192,15 @@ impl Simulation{
 
         let term2 = term2.diff_x();
 
-        let m: Vec<f64> = self.temperature.data.data.iter().map(|val|{
-            alpha / std::f64::consts::PI * (gamma * (teq - val)).atan()
+        let m: Vec<f32> = self.temperature.data.data.iter().map(|val|{
+            alpha / std::f32::consts::PI * (gamma * (teq - val)).atan()
         }).collect();
 
-        let new_phi: Vec<f64> = (0..self.phi.data.data.len()).map(|i|{
+        let new_phi: Vec<f32> = (0..self.phi.data.data.len()).map(|i|{
             self.phi.data.data[i] + (delta_t / tau) * (term1.data.data[i] - term2.data.data[i] + epsilon[i] * epsilon[i] * laplace_phi.data.data[i] + self.phi.data.data[i] * (1.0 - self.phi.data.data[i]) * (self.phi.data.data[i] - 0.5 + m[i]))
         }).collect();
 
-        let new_temperature: Vec<f64> = (0..self.temperature.data.data.len()).map(|i|{
+        let new_temperature: Vec<f32> = (0..self.temperature.data.data.len()).map(|i|{
             self.temperature.data.data[i] + delta_t * laplace_temperature.data.data[i] + kappa * (new_phi[i] - self.phi.data.data[i])
         }).collect();
 
@@ -218,13 +218,13 @@ impl GridData{
         }
     }
 
-    pub fn new_with_function(grid: Weak<Grid>, init: impl Fn(f64, f64) -> f64) -> GridData{
+    pub fn new_with_function(grid: Weak<Grid>, init: impl Fn(f32, f32) -> f32) -> GridData{
 
         let grid = grid.upgrade().unwrap();
 
         let data = (0..grid.size[1]).cartesian_product(0..grid.size[0]).map(|(j, i)|{
-            let x = i as f64 * grid.delta[0];
-            let y = j as f64 * grid.delta[1];
+            let x = i as f32 * grid.delta[0];
+            let y = j as f32 * grid.delta[1];
             init(x,y)
         }).collect();
 
@@ -239,7 +239,7 @@ impl GridData{
         }
     }
 
-    pub fn value(&self, i: usize, j: usize) -> f64{
+    pub fn value(&self, i: usize, j: usize) -> f32{
         self.data.data[self.data.ravel(i,j)]
     }
 
@@ -307,7 +307,7 @@ impl GridData{
 }
 
 impl Grid{
-    pub fn new(delta: [f64; 2], size: [usize; 2]) -> Grid{
+    pub fn new(delta: [f32; 2], size: [usize; 2]) -> Grid{
         Grid{
             delta,
             size
@@ -328,7 +328,7 @@ impl Array2D{
         j * self.size[0] + i
     }
 
-    fn value(&self, i: usize, j: usize) -> f64{
+    fn value(&self, i: usize, j: usize) -> f32{
         self.data[self.ravel(i,j)]
     }
 }
@@ -348,10 +348,10 @@ impl Add<Array2D> for Array2D{
     }
 }
 
-impl Add<f64> for Array2D{
+impl Add<f32> for Array2D{
     type Output = Self;
 
-    fn add(self, rhs: f64) -> Array2D{
+    fn add(self, rhs: f32) -> Array2D{
         let data = self.data.iter().map(|lhs|{
            lhs + rhs
         }).collect();
@@ -363,7 +363,7 @@ impl Add<f64> for Array2D{
     }
 }
 
-impl Add<Array2D> for f64{
+impl Add<Array2D> for f32{
     type Output = Array2D;
 
     fn add(self, rhs: Array2D) -> Array2D{
@@ -419,8 +419,8 @@ mod tests {
         let data2 = Array2D::new(grid.size);
         let grid_data_2 = GridData::new(Rc::downgrade(&grid), data2);
 
-        assert_f64_near!(grid_data.data.data[0], 0.);
-        assert_f64_near!(grid_data_2.data.data[0], 0.);
+        assert_f32!(grid_data.data.data[0], 0.);
+        assert_f32_near!(grid_data_2.data.data[0], 0.);
     }
 
     #[test]
@@ -428,11 +428,11 @@ mod tests {
         let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
         let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x + y });
 
-        assert_f64_near!(grid_data.value(0,0), 0.0);
-        assert_f64_near!(grid_data.value(1,0), 0.1);
-        assert_f64_near!(grid_data.value(0,1), 0.2);
-        assert_f64_near!(grid_data.value(1,1), 0.3);
-        assert_f64_near!(grid_data.value(2,3), 0.8);
+        assert_f32_near!(grid_data.value(0,0), 0.0);
+        assert_f32_near!(grid_data.value(1,0), 0.1);
+        assert_f32_near!(grid_data.value(0,1), 0.2);
+        assert_f32_near!(grid_data.value(1,1), 0.3);
+        assert_f32_near!(grid_data.value(2,3), 0.8);
     }
 
     #[test]
@@ -441,14 +441,14 @@ mod tests {
         let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x * x + y * y});
 
         let dfdx = grid_data.diff_x();
-        assert_f64_near!(dfdx.value(0,0), 0.0);
-        assert_f64_near!(dfdx.value(1,0), 0.0);
-        assert_f64_near!(dfdx.value(1,1), 0.2);
+        assert_f32_near!(dfdx.value(0,0), 0.0);
+        assert_f32_near!(dfdx.value(1,0), 0.0);
+        assert_f32_near!(dfdx.value(1,1), 0.2);
 
         let dfdy = grid_data.diff_y();
-        assert_f64_near!(dfdy.value(0,0), 0.0);
-        assert_f64_near!(dfdy.value(1,0), 0.0);
-        assert_f64_near!(dfdy.value(1,1), 0.4);
+        assert_f32_near!(dfdy.value(0,0), 0.0);
+        assert_f32_near!(dfdy.value(1,0), 0.0);
+        assert_f32_near!(dfdy.value(1,1), 0.4);
     }
 
     #[test]
@@ -461,9 +461,9 @@ mod tests {
         println!("{:?}", grid_data.data.data);
         println!("{:?}", laplace.data.data);
 
-        assert_f64_near!(laplace.value(0,0), 0.0);
-        assert_f64_near!(laplace.value(1,0), 0.0);
-        assert_f64_near!(laplace.value(1,1), 4.0);
+        assert_f32_near!(laplace.value(0,0), 0.0);
+        assert_f32_near!(laplace.value(1,0), 0.0);
+        assert_f32_near!(laplace.value(1,1), 4.0);
     }
 
     #[test]
@@ -566,20 +566,20 @@ mod tests {
     fn test_sin_cos_on_array(){
         let x = Array2D{
             size: [1, 3],
-            data: vec![0.0, std::f64::consts::PI / 4., std::f64::consts::PI / 2.0]
+            data: vec![0.0, std::f32::consts::PI / 4., std::f32::consts::PI / 2.0]
         };
 
         let result = sin(&x);
 
-        assert_f64_near!(result.data[0], 0.0);
-        assert_f64_near!(result.data[1], std::f64::consts::FRAC_1_SQRT_2);
-        assert_f64_near!(result.data[2], 1.0);
+        assert_f32_near!(result.data[0], 0.0);
+        assert_f32_near!(result.data[1], std::f32::consts::FRAC_1_SQRT_2);
+        assert_f32_near!(result.data[2], 1.0);
 
         let result = cos(&x);
-        assert_f64_near!(result.data[0], 1.0);
-        assert_f64_near!(result.data[1], std::f64::consts::FRAC_1_SQRT_2);
+        assert_f32_near!(result.data[0], 1.0);
+        assert_f32_near!(result.data[1], std::f32::consts::FRAC_1_SQRT_2);
         // TODO: understand how to do this assertion
-        //assert_f64_near!(result.data[2], 0.0, 100000);
+        //assert_f32_near!(result.data[2], 0.0, 100000);
     }
 
     #[test]
