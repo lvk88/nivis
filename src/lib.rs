@@ -28,6 +28,7 @@ pub struct GridData{
 pub struct Simulation{
     grid: Rc<Grid>,
     temperature: GridData
+    phi: GridData
 }
 
 impl Simulation{
@@ -35,10 +36,12 @@ impl Simulation{
         let grid = Rc::new(Grid::new([0.03, 0.03], [width, height]));
 
         let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
+        let phi = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
 
         Simulation{
             grid,
-            temperature
+            temperature,
+            phi
         }
     }
 }
