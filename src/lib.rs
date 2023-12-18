@@ -31,6 +31,8 @@ pub struct GridData{
 pub struct Simulation{
     pub width: usize,
     pub height: usize,
+    dx: f32,
+    dy: f32,
     grid: Rc<Grid>,
     temperature: GridData,
     phi: GridData
@@ -98,6 +100,8 @@ impl Simulation{
         Simulation{
             width,
             height,
+            dx,
+            dy,
             grid,
             temperature,
             phi
@@ -207,6 +211,27 @@ impl Simulation{
         self.temperature.data.data = new_temperature;
         self.phi.data.data = new_phi;
         console::time_end_with_label("Simulation::step");
+    }
+
+    pub fn reset(&mut self){
+        let temperature = GridData::new_with_function(Rc::downgrade(&self.grid), |_, _| 0.0);
+
+        let cx = (self.width / 2) as i64;
+        let cy = (self.height / 2) as i64;
+        let radius = 5;
+
+        let phi = GridData::new_with_function(Rc::downgrade(&self.grid), |x, y|{
+            let i = (x / self.dx).floor() as i64;
+            let j = (y / self.dy).floor() as i64;
+            if (i - cx) * (i - cx) + (j - cy) * (j - cy) < radius * radius{
+                1.0
+            }else{
+                0.0
+            }
+        });
+
+        self.temperature = temperature;
+        self.phi = phi;
     }
 }
 

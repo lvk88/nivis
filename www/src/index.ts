@@ -7,8 +7,8 @@ enum PostprocField{
 
 let postprocField = PostprocField.Phi;
 
-const width = 200;
-const height = 100;
+const width = 600;
+const height = 300;
 
 const canvasScale = 3;
 
@@ -26,9 +26,16 @@ toggleFieldButton.addEventListener("click", () => {
   }
 });
 
+const resetButton = <HTMLButtonElement>document.getElementById("reset-button");
+
 const context = canvas.getContext("2d");
 
 const s = new Simulation(width, height);
+
+resetButton.addEventListener("click", () => {
+  s.reset();
+});
+
 
 const postprocess = async () => {
   s.step();
