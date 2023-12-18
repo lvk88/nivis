@@ -50,6 +50,42 @@ impl<'a> GridData<'a>{
     pub fn value(&self, i: usize, j: usize) -> f64{
         self.data.data[self.data.ravel(i,j)]
     }
+
+    pub fn diff_x(&self) -> GridData{
+        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
+        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+            let index = self.data.ravel(i,j);
+            data[index] = (self.data.value(i + 1, j) - self.data.value(i - 1, j)) / (2. * self.grid.delta[0]);
+        });
+
+        let result_array = Array2D{
+            data,
+            size: self.grid.size
+        };
+
+        GridData{
+            grid: self.grid,
+            data: result_array
+        }
+    }
+
+    pub fn diff_y(&self) -> GridData{
+        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
+        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+            let index = self.data.ravel(i,j);
+            data[index] = (self.data.value(i, j + 1) - self.data.value(i, j - 1)) / (2. * self.grid.delta[1]);
+        });
+
+        let result_array = Array2D{
+            data,
+            size: self.grid.size
+        };
+
+        GridData{
+            grid: self.grid,
+            data: result_array
+        }
+    }
 }
 
 impl Grid{
@@ -72,6 +108,10 @@ impl Array2D{
 
     fn ravel(&self, i: usize, j: usize) -> usize{
         j * self.size[0] + i
+    }
+
+    fn value(&self, i: usize, j: usize) -> f64{
+        self.data[self.ravel(i,j)]
     }
 }
 
@@ -105,4 +145,21 @@ mod tests {
         assert_f64_near!(grid_data.value(1,1), 0.3);
         assert_f64_near!(grid_data.value(2,3), 0.8);
     }
+
+    #[test]
+    fn test_first_derivatives() {
+        let grid = Grid::new([0.1, 0.2], [3, 4]);
+        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x +  y * y });
+
+        let dfdx = grid_data.diff_x();
+        assert_f64_near!(dfdx.value(0,0), 0.0);
+        assert_f64_near!(dfdx.value(1,0), 0.0);
+        assert_f64_near!(dfdx.value(1,1), 0.2);
+
+        let dfdy = grid_data.diff_y();
+        assert_f64_near!(dfdy.value(0,0), 0.0);
+        assert_f64_near!(dfdy.value(1,0), 0.0);
+        assert_f64_near!(dfdy.value(1,1), 0.4);
+    }
+
 }
