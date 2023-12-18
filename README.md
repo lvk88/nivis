@@ -32,4 +32,4 @@ cargo test
 
 The library is an implementation of the phase field model from:
 
-_[1] Kobayashi, Ryo. "Modeling and numerical simulations of dendritic crystal growth." Physica D: Nonlinear Phenomena 63.3-4 (1993): 410-423. _
+_[1] Kobayashi, Ryo. "Modeling and numerical simulations of dendritic crystal growth." Physica D: Nonlinear Phenomena 63.3-4 (1993): 410-423._
