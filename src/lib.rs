@@ -2,6 +2,8 @@ use wasm_bindgen::prelude::*;
 
 use std::ops::{Add, Sub};
 
+use std::rc::{Rc, Weak};
+
 use itertools::Itertools;
 
 // This is just a 2D array
@@ -18,20 +20,41 @@ pub struct Grid{
 }
 
 // This merges the geometry of a grid with associated data
-pub struct GridData<'a>{
-    grid: &'a Grid,
+pub struct GridData{
+    grid: Weak<Grid>,
     data: Array2D
 }
 
-impl<'a> GridData<'a>{
-    pub fn new(grid: &Grid, data: Array2D) -> GridData{
+pub struct Simulation{
+    grid: Rc<Grid>,
+    temperature: GridData
+}
+
+impl Simulation{
+    pub fn new(width: usize, height: usize) -> Simulation{
+        let grid = Rc::new(Grid::new([0.03, 0.03], [width, height]));
+
+        let temperature = GridData::new_with_function(Rc::downgrade(&grid), |_, _| 0.0);
+
+        Simulation{
+            grid,
+            temperature
+        }
+    }
+}
+
+impl GridData{
+    pub fn new(grid: Weak<Grid>, data: Array2D) -> GridData{
         GridData{
             grid,
             data
         }
     }
 
-    pub fn new_with_function(grid: &Grid, init: impl Fn(f64, f64) -> f64) -> GridData{
+    pub fn new_with_function(grid: Weak<Grid>, init: impl Fn(f64, f64) -> f64) -> GridData{
+
+        let grid = grid.upgrade().unwrap();
+
         let data = (0..grid.size[1]).cartesian_product(0..grid.size[0]).map(|(j, i)|{
             let x = i as f64 * grid.delta[0];
             let y = j as f64 * grid.delta[1];
@@ -44,7 +67,7 @@ impl<'a> GridData<'a>{
         };
 
         GridData{
-            grid,
+            grid: Rc::downgrade(&grid),
             data: array
         }
     }
@@ -54,48 +77,51 @@ impl<'a> GridData<'a>{
     }
 
     pub fn diff_x(&self) -> GridData{
-        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
-        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+        let grid = self.grid.upgrade().unwrap();
+        let mut data = vec![0.; grid.size[0] * grid.size[1]];
+        (1..grid.size[1] - 1).cartesian_product(1..grid.size[0] - 1).for_each(|(j,i)|{
             let index = self.data.ravel(i,j);
-            data[index] = (self.data.value(i + 1, j) - self.data.value(i - 1, j)) / (2. * self.grid.delta[0]);
+            data[index] = (self.data.value(i + 1, j) - self.data.value(i - 1, j)) / (2. * grid.delta[0]);
         });
 
         let result_array = Array2D{
             data,
-            size: self.grid.size
+            size: grid.size
         };
 
         GridData{
-            grid: self.grid,
+            grid: self.grid.clone(),
             data: result_array
         }
     }
 
     pub fn diff_y(&self) -> GridData{
-        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
-        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+        let grid = self.grid.upgrade().unwrap();
+        let mut data = vec![0.; grid.size[0] * grid.size[1]];
+        (1..grid.size[1] - 1).cartesian_product(1..grid.size[0] - 1).for_each(|(j,i)|{
             let index = self.data.ravel(i,j);
-            data[index] = (self.data.value(i, j + 1) - self.data.value(i, j - 1)) / (2. * self.grid.delta[1]);
+            data[index] = (self.data.value(i, j + 1) - self.data.value(i, j - 1)) / (2. * grid.delta[1]);
         });
 
         let result_array = Array2D{
             data,
-            size: self.grid.size
+            size: grid.size
         };
 
         GridData{
-            grid: self.grid,
+            grid: self.grid.clone(),
             data: result_array
         }
     }
 
     pub fn laplace(&self) -> GridData {
-        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
-        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+        let grid = self.grid.upgrade().unwrap();
+        let mut data = vec![0.; grid.size[0] * grid.size[1]];
+        (1..grid.size[1] - 1).cartesian_product(1..grid.size[0] - 1).for_each(|(j,i)|{
             let index = self.data.ravel(i,j);
 
-            let ddx = (self.data.value(i + 1, j) - 2. * self.data.value(i, j) + self.data.value(i - 1, j)) / (self.grid.delta[0] * self.grid.delta[0]);
-            let ddy = (self.data.value(i, j + 1) - 2. * self.data.value(i, j) + self.data.value(i, j - 1)) / (self.grid.delta[1] * self.grid.delta[1]);
+            let ddx = (self.data.value(i + 1, j) - 2. * self.data.value(i, j) + self.data.value(i - 1, j)) / (grid.delta[0] * grid.delta[0]);
+            let ddy = (self.data.value(i, j + 1) - 2. * self.data.value(i, j) + self.data.value(i, j - 1)) / (grid.delta[1] * grid.delta[1]);
 
 
             data[index] = ddx + ddy;
@@ -103,11 +129,11 @@ impl<'a> GridData<'a>{
 
         let result_array = Array2D{
             data,
-            size: self.grid.size
+            size: grid.size
         };
 
         GridData{
-            grid: self.grid,
+            grid: self.grid.clone(),
             data: result_array
         }
     }
@@ -218,13 +244,13 @@ mod tests {
 
     #[test]
     fn create_a_grid() {
-        let grid = Grid::new([0.1, 0.2], [3, 4]);
+        let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
         let data = Array2D::new(grid.size);
 
-        let grid_data = GridData::new(&grid, data);
+        let grid_data = GridData::new(Rc::downgrade(&grid), data);
 
         let data2 = Array2D::new(grid.size);
-        let grid_data_2 = GridData::new(&grid, data2);
+        let grid_data_2 = GridData::new(Rc::downgrade(&grid), data2);
 
         assert_f64_near!(grid_data.data.data[0], 0.);
         assert_f64_near!(grid_data_2.data.data[0], 0.);
@@ -232,8 +258,8 @@ mod tests {
 
     #[test]
     fn create_a_grid_with_function() {
-        let grid = Grid::new([0.1, 0.2], [3, 4]);
-        let grid_data = GridData::new_with_function(&grid, |x,y|{ x + y });
+        let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
+        let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x + y });
 
         assert_f64_near!(grid_data.value(0,0), 0.0);
         assert_f64_near!(grid_data.value(1,0), 0.1);
@@ -244,8 +270,8 @@ mod tests {
 
     #[test]
     fn test_first_derivatives() {
-        let grid = Grid::new([0.1, 0.2], [3, 4]);
-        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x + y * y });
+        let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
+        let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x * x + y * y});
 
         let dfdx = grid_data.diff_x();
         assert_f64_near!(dfdx.value(0,0), 0.0);
@@ -260,8 +286,8 @@ mod tests {
 
     #[test]
     fn test_laplace() {
-        let grid = Grid::new([0.1, 0.2], [3, 4]);
-        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x + y * y });
+        let grid = Rc::new(Grid::new([0.1, 0.2], [3, 4]));
+        let grid_data = GridData::new_with_function(Rc::downgrade(&grid), |x,y|{ x * x + y * y });
 
         let laplace = grid_data.laplace();
 
