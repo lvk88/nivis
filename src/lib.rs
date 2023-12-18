@@ -93,13 +93,7 @@ impl Simulation{
         let delta = 0.04;
 
         let phi = GridData::new_with_function(Rc::downgrade(&grid), |x, y|{
-            let i = (x / dx).floor() as i64;
-            let j = (y / dy).floor() as i64;
-            if (i - cx) * (i - cx) + (j - cy) * (j - cy) < radius * radius{
-                1.0
-            }else{
-                0.0
-            }
+            0.0
         });
 
         Simulation{
@@ -224,13 +218,7 @@ impl Simulation{
         let radius = 5;
 
         let phi = GridData::new_with_function(Rc::downgrade(&self.grid), |x, y|{
-            let i = (x / self.dx).floor() as i64;
-            let j = (y / self.dy).floor() as i64;
-            if (i - cx) * (i - cx) + (j - cy) * (j - cy) < radius * radius{
-                1.0
-            }else{
-                0.0
-            }
+            0.0
         });
 
         self.temperature = temperature;
