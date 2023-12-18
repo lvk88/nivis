@@ -42,7 +42,7 @@ struct RGBA{
     a: u8
 }
 
-const COLORMAP: [RGBA; 10] = [
+const COLORMAP_COOL_TO_WARM: [RGBA; 10] = [
     RGBA{r: 58,  g: 76,  b: 192, a: 255},
     RGBA{r: 88,  g: 118, b: 226, a: 255},
     RGBA{r: 123, g: 158, b: 248, a: 255},
@@ -93,8 +93,8 @@ impl Simulation{
         (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
             let value = self.temperature.value(i + 1, j + 1);
             let clamped_val = value.clamp(0.0, 1.0);
-            let index = (clamped_val * COLORMAP.len() as f64 - 1.0) as usize;
-            let start_color = &COLORMAP[index];
+            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f64 - 1.0) as usize;
+            let start_color = &COLORMAP_COOL_TO_WARM[index];
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
     }
@@ -103,8 +103,8 @@ impl Simulation{
         (0..self.width).cartesian_product(0..self.height).map(|(i,j)|{
             let value = self.phi.value(i + 1, j + 1);
             let clamped_val = value.clamp(0.0, 1.0);
-            let index = (clamped_val * COLORMAP.len() as f64 - 1.0) as usize;
-            let start_color = &COLORMAP[index];
+            let index = (clamped_val * COLORMAP_COOL_TO_WARM.len() as f64 - 1.0) as usize;
+            let start_color = &COLORMAP_COOL_TO_WARM[index];
             [start_color.r, start_color.g, start_color.b, start_color.a]
         }).flatten().collect()
     }
@@ -489,22 +489,22 @@ mod tests {
         let temperature_rgb = s.get_temperature_rgb();
         assert_eq!(temperature_rgb.len(), 100 * 100 * 4);
 
-        assert_eq!(temperature_rgb[0], COLORMAP[0].r);
-        assert_eq!(temperature_rgb[1], COLORMAP[0].g);
-        assert_eq!(temperature_rgb[2], COLORMAP[0].b);
-        assert_eq!(temperature_rgb[3], COLORMAP[0].a);
+        assert_eq!(temperature_rgb[0], COLORMAP_COOL_TO_WARM[0].r);
+        assert_eq!(temperature_rgb[1], COLORMAP_COOL_TO_WARM[0].g);
+        assert_eq!(temperature_rgb[2], COLORMAP_COOL_TO_WARM[0].b);
+        assert_eq!(temperature_rgb[3], COLORMAP_COOL_TO_WARM[0].a);
 
         let phi_rgb = s.get_phi_rgb();
         assert_eq!(phi_rgb.len(), 100 * 100 * 4);
-        assert_eq!(phi_rgb[0], COLORMAP[0].r);
-        assert_eq!(phi_rgb[1], COLORMAP[0].g);
-        assert_eq!(phi_rgb[2], COLORMAP[0].b);
-        assert_eq!(phi_rgb[3], COLORMAP[0].a);
+        assert_eq!(phi_rgb[0], COLORMAP_COOL_TO_WARM[0].r);
+        assert_eq!(phi_rgb[1], COLORMAP_COOL_TO_WARM[0].g);
+        assert_eq!(phi_rgb[2], COLORMAP_COOL_TO_WARM[0].b);
+        assert_eq!(phi_rgb[3], COLORMAP_COOL_TO_WARM[0].a);
 
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50], COLORMAP[9].r);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 1], COLORMAP[9].g);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 2], COLORMAP[9].b);
-        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 3], COLORMAP[9].a);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50], COLORMAP_COOL_TO_WARM[9].r);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 1], COLORMAP_COOL_TO_WARM[9].g);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 2], COLORMAP_COOL_TO_WARM[9].b);
+        assert_eq!(phi_rgb[50 * 4 * 100 + 4 * 50 + 3], COLORMAP_COOL_TO_WARM[9].a);
     }
 
 }
