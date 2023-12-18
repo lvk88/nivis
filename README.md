@@ -12,8 +12,12 @@ A live demo is available here: TODO
 ```
 git clone ...
 cd www
+npm i
 npm run start
 ```
+
+Note for windows users: in case `npm run start` complains about not being able to install wasm-pack manually, you might want to install it from this link:
+https://rustwasm.github.io/wasm-pack/installer/
 
 ## Building for deployment
 
