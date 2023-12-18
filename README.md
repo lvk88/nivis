@@ -1,7 +1,9 @@
 # nivis
 ## Simulation of ice crystal growth 
 
-This program simulates the growth of ice crystals, following the algorithm described in _Ryo Kobayashi, Modeling and numerical simulations of dendritic crystal growth_.
+![nivis](assets/nivis.png)
+
+Implementation of _Ryo Kobayashi's__ dendritic crystal growth algorithm from the paper _Modeling and numerical simulations of dendritic crystal growth_.
 
 The simulation part is written in Rust that is compiled into webassembly. Visualization and interaction is implemented in TypeScript.
 
@@ -27,6 +29,8 @@ npx webpack build --mode production
 ```
 
 ## Tests
+
+Currently, only the functions of the wasm module are tested.
 
 ```
 cargo test
