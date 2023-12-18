@@ -86,6 +86,29 @@ impl<'a> GridData<'a>{
             data: result_array
         }
     }
+
+    pub fn laplace(&self) -> GridData {
+        let mut data = vec![0.; self.grid.size[0] * self.grid.size[1]];
+        (1..self.grid.size[1] - 1).cartesian_product(1..self.grid.size[0] - 1).for_each(|(j,i)|{
+            let index = self.data.ravel(i,j);
+
+            let ddx = (self.data.value(i + 1, j) - 2. * self.data.value(i, j) + self.data.value(i - 1, j)) / (self.grid.delta[0] * self.grid.delta[0]);
+            let ddy = (self.data.value(i, j + 1) - 2. * self.data.value(i, j) + self.data.value(i, j - 1)) / (self.grid.delta[1] * self.grid.delta[1]);
+
+
+            data[index] = ddx + ddy;
+        });
+
+        let result_array = Array2D{
+            data,
+            size: self.grid.size
+        };
+
+        GridData{
+            grid: self.grid,
+            data: result_array
+        }
+    }
 }
 
 impl Grid{
@@ -149,7 +172,7 @@ mod tests {
     #[test]
     fn test_first_derivatives() {
         let grid = Grid::new([0.1, 0.2], [3, 4]);
-        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x +  y * y });
+        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x + y * y });
 
         let dfdx = grid_data.diff_x();
         assert_f64_near!(dfdx.value(0,0), 0.0);
@@ -162,4 +185,18 @@ mod tests {
         assert_f64_near!(dfdy.value(1,1), 0.4);
     }
 
+    #[test]
+    fn test_laplace() {
+        let grid = Grid::new([0.1, 0.2], [3, 4]);
+        let grid_data = GridData::new_with_function(&grid, |x,y|{ x * x + y * y });
+
+        let laplace = grid_data.laplace();
+
+        println!("{:?}", grid_data.data.data);
+        println!("{:?}", laplace.data.data);
+
+        assert_f64_near!(laplace.value(0,0), 0.0);
+        assert_f64_near!(laplace.value(1,0), 0.0);
+        assert_f64_near!(laplace.value(1,1), 4.0);
+    }
 }
