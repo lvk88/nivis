@@ -7,7 +7,7 @@ Implementation of _Ryo Kobayashi's_ dendritic crystal growth algorithm from the 
 
 The simulation part is written in Rust that is compiled into webassembly. Visualization and interaction is implemented in TypeScript.
 
-A live demo is available here: TODO
+Click [here](https://nivis.kude.la) for a live demo.
 
 ## Running
 
