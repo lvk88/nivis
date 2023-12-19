@@ -31,6 +31,10 @@ module.exports = {
         {
           from: "src/index.html",
           to: "index.html"
+        },
+        {
+          from: "src/github-mark-white.svg",
+          to: "github-mark-white.svg"
         }
       ],
     }),
