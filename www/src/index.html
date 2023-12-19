@@ -8,7 +8,8 @@
  body, html {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Disable scrolling on the body and html elements */
+            overflow: hidden; 
+            height: 100%;
         }
 
         #canvasContainer {
@@ -16,7 +17,10 @@
             top: 0;
             left: 0;
             width: 100vw;
-            height: 100vh;
+            height: 100%;
+            min-height: -moz-available;
+            min-height: -webkit-fill-available;
+            min-height: fill-available;
         }
 
         #postproc-area {
@@ -27,18 +31,27 @@
 
         .overlay {
             position: absolute;
-            top: 10px; /* Adjust top distance as needed */
-            left: 10px; /* Adjust left distance as needed */
-            color: #000; /* Set your desired text color */
-            z-index: 1; /* Set a higher z-index to ensure it's above the canvas */
+            top: 10px; 
+            left: 10px; 
+            color: #000; 
+            z-index: 1; 
+        }
+
+        .bottom-right {
+          position: absolute;
+          bottom: 15px;
+          right: 15px;
+          z-index: 1;
         }
   </style>
   </head>
   <body>
     <div id="canvasContainer">
-    <div id="pane-container" class="overlay"></div>
-    <canvas id="postproc-area">
-    </canvas>
+      <div id="pane" class="overlay">
+      </div>
+      <canvas id="postproc-area">
+      </canvas>
+      <div id="about-container" class="bottom-right">Github</div>
     </div>
   </body>
   <script src="./main.js"></script>

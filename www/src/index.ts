@@ -39,7 +39,7 @@ const isPaused = () => {
   return animationFrameID == null;
 }
 
-const paneContainer = document.getElementById("pane-container");
+const paneContainer = document.getElementById("pane");
 const pane = new Pane({container: paneContainer, title: "Controls", expanded: false});
 pane.addBinding(simulationParams, 'kappa', {label: "κ", min: 0.8, max: 2.0, step: 0.01} );
 pane.addBinding(simulationParams, 'delta', {label: "δ", min: 0.0, max: 0.05, step: 0.005} );
