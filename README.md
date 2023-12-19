@@ -3,7 +3,7 @@
 
 ![nivis](assets/nivis.png)
 
-Implementation of _Ryo Kobayashi's__ dendritic crystal growth algorithm from the paper _Modeling and numerical simulations of dendritic crystal growth_.
+Implementation of _Ryo Kobayashi's_ dendritic crystal growth algorithm from the paper _Modeling and numerical simulations of dendritic crystal growth_.
 
 The simulation part is written in Rust that is compiled into webassembly. Visualization and interaction is implemented in TypeScript.
 
@@ -12,7 +12,7 @@ A live demo is available here: TODO
 ## Running
 
 ```
-git clone ...
+git clone https://github.com/lvk88/nivis.git
 cd www
 npm i
 npm run start
