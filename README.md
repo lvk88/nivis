@@ -1,5 +1,5 @@
 # nivis
-## Simulation of ice crystal growth 
+## Simulation of ice crystal growth in the browser
 
 ![nivis](assets/nivis_demo.gif)
 
