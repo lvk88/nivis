@@ -1,7 +1,7 @@
 # nivis
 ## Simulation of ice crystal growth 
 
-![nivis](assets/nivis.png)
+![nivis](assets/nivis_demo.gif)
 
 Implementation of _Ryo Kobayashi's_ dendritic crystal growth algorithm from the paper _Modeling and numerical simulations of dendritic crystal growth_.
 
