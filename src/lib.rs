@@ -102,6 +102,32 @@ impl Simulation{
     }
 
     pub fn step(&mut self){
+
+        // Enforce Neumann boundary conditions on all four edges, for both temperature and phi
+        // fields
+        for j in 0..self.temperature.size[1]{
+            let index_left  = self.temperature.ravel(0, j);
+            let index_right = self.temperature.ravel(self.temperature.size[0] - 1, j);
+
+            let value_left = self.temperature.value(2, j);
+            let value_right = self.temperature.value(self.temperature.size[0] - 3, j);
+
+            self.temperature.data[index_left] = value_left;
+            self.temperature.data[index_right] = value_right;
+        }
+
+        for i in 0..self.temperature.size[0]{
+            let index_bottom  = self.temperature.ravel(i, 0);
+            let index_top = self.temperature.ravel(i, self.temperature.size[1] - 1);
+
+            let value_bottom = self.temperature.value(i, 2);
+            let value_top = self.temperature.value(i, self.temperature.size[1] - 3);
+
+            self.temperature.data[index_bottom] = value_bottom;
+            self.temperature.data[index_top] = value_top;
+        }
+
+        // These parameters are taken from Kobayashi's paper
         let delta_t = 1e-4;
         let epsilonb = 0.01;
         let aniso = 6.0;
